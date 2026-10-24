@@ -180,4 +180,4 @@ ls *.fasta | parallel --bar "mafft \
 
 "${SED_INPLACE[@]}" 's/_R_//g' $dir/aligned/*
 
-echo -e "\n## All down for now, goodbye $user ##\n"
+echo -e "\n## All done for now, goodbye $user ##\n"
