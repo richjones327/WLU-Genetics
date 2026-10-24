@@ -18,15 +18,16 @@ if [ ! -d contigs ]; then
 	exit 1
 fi
 
-if [ ! -d ~/miniconda3/envs/bootleg ]; then
-	echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
-	conda create -n bootleg -y -q
-	conda activate bootleg
-	conda install lastz mafft parallel -y -q
+if [ ! -f $dir/probes.fasta ]; then
+	echo -e "\n!! The probes.fasta file is missing, make sure to download it before re-running !!\n"
+	exit 1
 fi
 
+echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
+conda create -n bootleg lastz mafft parallel -y -q
+
 conda activate bootleg
-#parallel --citation
+parallel --citation
 
 if [ ! -d uce-matches ]; then
 	mkdir uce-matches
@@ -46,23 +47,10 @@ else
 	fi
 fi
 
-if [ ! -f $dir/probes.fasta ]; then
-	echo -e "\n!! The probes.fasta fill is missing, make sure to download it before re-running !!\n"
-	exit 1
-fi
-
 echo -e "\n## Starting LASTZ ##\n"
 
 cd contigs
-#total=$(ls *.fasta | wc -l)
-#sample_count=1
-#for fasta in *.fasta; do
-#sample=$(basename $fasta .fasta)
-#if [ -f ../uce-matches/"$sample-all.csv" ]; then
-#	echo "## Skipping $sample ##"
-#else
-#	echo "## Running LASTZ on $sample_count out of $total ##"
-#$fasta[multiple]
+
 ls *.fasta | sed 's/.fasta//' | parallel --bar "lastz {}.fasta[multiple] \
 	../probes.fasta \
 	--identity=80 \
@@ -80,8 +68,6 @@ ls *.fasta | sed 's/.fasta//' | parallel --bar "lastz {}.fasta[multiple] \
 	--gappedthresh=3000 \
 	--noentropy \
 	--format=general:name2,name1,score,identity,coverage,strand1,strand2 | sed -e 's/\t/,/g' -e 's/_length_/,/g' -e 's/_cov_/,/g' | sed -E 's/(uce-[0-9]{1,})_(p[0-9]{1,})/\1,\2/g' > $dir/uce-matches/{}-all.csv"
-#fi
-#done
 
 if [ ! -d $dir/exploded-fastas/ ]; then
 	mkdir $dir/exploded-fastas/
@@ -107,7 +93,6 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
 	"${SED_INPLACE[@]}" "1c\Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation" "$sample-all.csv"
 fi
-#sed -i '' "1c\Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation" "$sample-all.csv"
 
 # Collect matches
 locus_matches=$(awk -F, '{print $1}' "$sample-all.csv" | sed -E '/Locus/d' | sort -h | uniq)
