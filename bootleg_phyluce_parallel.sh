@@ -24,7 +24,7 @@ if [ ! -f $dir/probes.fasta ]; then
 fi
 
 echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
-conda create -n bootleg lastz mafft parallel trimal -y -q
+conda create -n bootleg lastz mafft parallel trimal aliview -y -q
 
 conda activate bootleg
 
