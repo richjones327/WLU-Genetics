@@ -1,13 +1,13 @@
 Project:
 -----------------------
-Project name          = batch:./batch.txt
+Project name          = name
 Type                  = mito
 Genome Range          = 12000-20500
 K-mer                 = 39
 Max memory            = 12
 Extended log          =
 Save assembled reads  =
-Seed Input            = batch
+Seed Input            = ./palpiset_mtDNA.fasta
 Reference sequence    =
 Variance detection    = 
 Chloroplast sequence  =
@@ -19,8 +19,8 @@ Insert size           = 150
 Platform              = illumina
 Single/Paired         = PE
 Combined reads        = 
-Forward reads         = batch
-Reverse reads         = batch
+Forward reads         = name
+Reverse reads         = name
 
 Heteroplasmy:
 -----------------------
