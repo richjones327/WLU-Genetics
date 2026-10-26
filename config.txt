@@ -1,6 +1,6 @@
 Project:
 -----------------------
-Project name          = name
+Project name          = sampn
 Type                  = mito
 Genome Range          = 12000-20500
 K-mer                 = 39
@@ -19,8 +19,8 @@ Insert size           = 150
 Platform              = illumina
 Single/Paired         = PE
 Combined reads        = 
-Forward reads         = name_R1.fastq.gz
-Reverse reads         = name_R1.fastq.gz
+Forward reads         = sampn_R1.fastq.gz
+Reverse reads         = sampn_R2.fastq.gz
 
 Heteroplasmy:
 -----------------------
