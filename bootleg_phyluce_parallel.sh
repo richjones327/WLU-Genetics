@@ -27,7 +27,6 @@ echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
 conda create -n bootleg lastz mafft parallel -y -q
 
 conda activate bootleg
-parallel --citation
 
 if [ ! -d uce-matches ]; then
 	mkdir uce-matches
