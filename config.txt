@@ -19,8 +19,8 @@ Insert size           = 150
 Platform              = illumina
 Single/Paired         = PE
 Combined reads        = 
-Forward reads         = name
-Reverse reads         = name
+Forward reads         = name_R1.fastq.gz
+Reverse reads         = name_R1.fastq.gz
 
 Heteroplasmy:
 -----------------------
