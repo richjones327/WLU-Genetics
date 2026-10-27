@@ -10,8 +10,8 @@ echo -e "## Trimming alignments ##\n"
 
 cd aligned
 
-if [ -d trimmed ]; then
-	rm -r trimmed/
+if [ -d trimal ]; then
+	rm -r trimal/
 fi
 
 for n in *; do
