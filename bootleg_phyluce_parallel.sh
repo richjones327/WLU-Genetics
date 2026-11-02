@@ -26,7 +26,7 @@ fi
 echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
 conda create -n bootleg lastz mafft parallel trimal aliview -y -q
 conda create -n amas amas -y -q
-conda create -n figtree figtree -y -q
+conda create -n iqtree iqtree figtree -y -q
 
 conda activate bootleg
 
