@@ -3,7 +3,7 @@
 dir=$(pwd)
 sample=$1
 sample=$(basename $sample)
-
+curl -L -O https://raw.githubusercontent.com/richjones327/WLU-Genetics/refs/heads/main/gene_order.txt
 echo "## Working on "$sample" ##"
 mconda_profile=$(find ~/ -name 'conda.sh' | grep 'etc/profile')
 mconda=$(find ~/ -name 'miniconda' | xargs basename)
@@ -46,8 +46,6 @@ if [ -d $dir/mitos/$name/0/ ]; then
 fi
 
 cd $dir/
-
-curl -L -O https://raw.githubusercontent.com/richjones327/WLU-Genetics/refs/heads/main/gene_order.txt
 
 cd $dir/mitos/$name/
 
