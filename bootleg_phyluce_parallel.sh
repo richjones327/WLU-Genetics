@@ -137,7 +137,7 @@ export -f extract_sample
 
 parallel --bar extract_sample ::: *all.csv
 
-
+echo "## Not stuck, just tidying up ##"
 cd $dir
 if [ ! -d unaligned ]; then
 	mkdir unaligned
