@@ -19,8 +19,7 @@ if [ ! -d contigs ]; then
 fi
 
 if [ ! -f $dir/probes.fasta ]; then
-	echo -e "\n!! The probes.fasta file is missing, make sure to download it before re-running !!\n"
-	exit 1
+	curl -L -O https://raw.githubusercontent.com/richjones327/WLU-Genetics/refs/heads/main/probes.fasta
 fi
 
 echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
@@ -175,7 +174,6 @@ ls *.fasta | parallel --bar "mafft \
 		--quiet \
 		--thread 2 \
 		--localpair {} > ../aligned/{}"
-
 
 "${SED_INPLACE[@]}" 's/_R_//g' $dir/aligned/*
 
