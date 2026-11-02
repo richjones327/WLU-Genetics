@@ -4,17 +4,18 @@ source ~/miniconda3/etc/profile.d/conda.sh
 
 export OS=$(echo "$OSTYPE")
 export dir=$(pwd)
-subdir=$(basename $dir)
 
 user=$(whoami)
 echo -e "\n## Hello $user ##"
 
-if [[ "$subdir" != "solifuge_dna" ]]; then
-	echo "!! Current directory is not solifuge_dna. Navigate to solifuge_dna first !!"
-	exit 1
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_INPLACE=(sed -i '')
+else
+    SED_INPLACE=(sed -i)
 fi
-if [ ! -d contigs ]; then
-	echo "!! contigs folder not found, make a folder with the .fasta files named 'contigs' !!"
+
+if ! [[ "$dir" == *solifuge_dna/01_eremospina* ]]; then
+	echo "!! Current directory is not solifuge_dna. Navigate to solifuge_dna first !!"
 	exit 1
 fi
 
@@ -24,30 +25,20 @@ fi
 
 echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
 conda create -n bootleg lastz mafft parallel trimal aliview -y -q
+conda create -n amas amas -y -q
+conda create -n figtree figtree -y -q
 
 conda activate bootleg
 
-if [ ! -d uce-matches ]; then
-	mkdir uce-matches
+if [ ! -d 02_uce-matches ]; then
+	mkdir 02_uce-matches
 else
-	rm uce-matches/*
-fi
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    SED_INPLACE=(sed -i '')
-	if [ -f /mnt/c/Users/$user/Downloads/probes.fasta ]; then
-		mv /mnt/c/Users/$user/Downloads/probes.fasta ./
-	fi
-else
-    SED_INPLACE=(sed -i)
-	if [ -f ~/Downloads/probes.fasta ]; then
-		mv ~/Downloads/probes.fasta ./
-	fi
+	rm 02_uce-matches/*
 fi
 
 echo -e "\n## Starting LASTZ ##\n"
 
-cd contigs
+cd 01_contigs
 
 ls *.fasta | sed 's/.fasta//' | parallel --bar "lastz {}.fasta[multiple] \
 	../probes.fasta \
@@ -65,14 +56,14 @@ ls *.fasta | sed 's/.fasta//' | parallel --bar "lastz {}.fasta[multiple] \
 	--hspthresh=3000 \
 	--gappedthresh=3000 \
 	--noentropy \
-	--format=general:name2,name1,score,identity,coverage,strand1,strand2 | sed -e 's/\t/,/g' -e 's/_length_/,/g' -e 's/_cov_/,/g' | sed -E 's/(uce-[0-9]{1,})_(p[0-9]{1,})/\1,\2/g' > $dir/uce-matches/{}-all.csv"
+	--format=general:name2,name1,score,identity,coverage,strand1,strand2 | sed -e 's/\t/,/g' -e 's/_length_/,/g' -e 's/_cov_/,/g' | sed -E 's/(uce-[0-9]{1,})_(p[0-9]{1,})/\1,\2/g' > $dir/02_uce-matches/{}-all.csv"
 
-if [ ! -d $dir/exploded-fastas/ ]; then
-	mkdir $dir/exploded-fastas/
+if [ ! -d $dir/03_exploded-fastas/ ]; then
+	mkdir $dir/03_exploded-fastas/
 fi
 
 # Modify output spreadsheet
-cd $dir/uce-matches/
+cd $dir/02_uce-matches/
 echo -e "\n## Parsing & extracting UCE hits ##\n"
 extract_sample() {
 local SED_INPLACE
@@ -117,16 +108,16 @@ while IFS= read -r contig; do
 done <<< "$contig_matches"
 
 # Extract UCE matches to "exploded fasta" #
-cat $dir/contigs/$sample.fasta | awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' > $sample.fasta
+cat $dir/01_contigs/$sample.fasta | awk '{if(NR==1) {print $0} else {if($0 ~ /^>/) {print "\n"$0} else {printf $0}}}' > $sample.fasta
 
 good_hits=$(tail -n +2 "$sample.csv" | awk -F, '{print $1}')
-> $dir/exploded-fastas/$sample.fasta
+> $dir/03_exploded-fastas/$sample.fasta
 
 #echo "## Extracting UCE loci for "$sample" ##"
 while IFS= read -r match; do
 	contig=$(grep "$match," "$sample.csv" | head -n 1 | awk -F, '{print $2}')
-	echo ">$sample |$match" >> $dir/exploded-fastas/$sample.fasta
-	grep -A1 "$contig\_" "$sample.fasta" | sed -E "/$contig/d" >> $dir/exploded-fastas/$sample.fasta
+	echo ">$sample |$match" >> $dir/03_exploded-fastas/$sample.fasta
+	grep -A1 "$contig\_" "$sample.fasta" | sed -E "/$contig/d" >> $dir/03_exploded-fastas/$sample.fasta
 done <<< "$good_hits"
 
 rm $sample.fasta
@@ -137,21 +128,22 @@ export -f extract_sample
 
 parallel --bar extract_sample ::: *all.csv
 
-echo "## Not stuck, just tidying up ##"
+echo -e "\n## Sorting loci ##"
+
 cd $dir
-if [ ! -d unaligned ]; then
-	mkdir unaligned
-else
-	rm unaligned/*
+if [ -d 04_loci ]; then
+	rm -r 04_loci
 fi
 
-loci=$(grep -hoE 'uce-[0-9]{1,}' $dir/exploded-fastas/*)
+mkdir 04_loci
+
+loci=$(grep -hoE 'uce-[0-9]{1,}' $dir/03_exploded-fastas/*)
 
 while IFS= read -r locus; do
-	grep -h -A1 "$locus$" exploded-fastas/* | awk '$0 != "--"' > unaligned/"$locus.fasta"
+	grep -h -A1 "$locus$" 03_exploded-fastas/* | awk '$0 != "--"' > 04_loci/"$locus.fasta"
 done <<< "$loci"
 
-cd unaligned
+cd 04_loci
 
 for fasta in *.fasta; do
 	locus_count=$(grep -c '>' $fasta)
@@ -161,11 +153,11 @@ for fasta in *.fasta; do
 	fi
 done
 
-if [ ! -d ../aligned ]; then
-	mkdir ../aligned
-else
-	rm ../aligned/*
+if [ -d 01_aligned ]; then
+	rm -r 01_aligned
 fi
+
+mkdir 01_aligned/
 
 echo -e "\n## Starting alignments ##\n"
 ls *.fasta | parallel --bar "mafft \
@@ -173,8 +165,52 @@ ls *.fasta | parallel --bar "mafft \
 		--maxiterate 1000 \
 		--quiet \
 		--thread 2 \
-		--localpair {} > ../aligned/{}"
+		--localpair {} > 01_aligned/{}"
 
-"${SED_INPLACE[@]}" 's/_R_//g' $dir/aligned/*
 
+"${SED_INPLACE[@]}" 's/_R_//g' 01_aligned/*
+
+echo "## Trimming Alignments ##"
+
+mkdir 02_trimal
+cd 01_aligned/
+for align in *.fasta; do
+	locus=$(basename $align .fasta)
+	trimal -in $align \
+		-out ../02_trimal/$locus.fasta \
+		-fasta \
+		-gt 0.8
+done
+
+echo "## Creating 75% occupancy matrices ##"
+
+cd ../02_trimal/
+mkdir ../03_75p_occupancy
+
+for i in *.fasta; do
+	grep '>' $i >> list.txt
+done
+taxa=$(sort list.txt | uniq | wc -l)
+rm list.txt
+
+threshold=$((taxa * occup/100))
+for i in *.fasta; do
+	count=$(grep -c '>' $i)
+	if [[ "$count" -ge "$threshold" ]]; then
+		cp $i ../03_75p_occupancy/
+	fi
+done
+
+echo "## Concatenating ##"
+cd ../03_75p_occupancy
+
+conda activate amas
+
+AMAS.py concat -i *.fasta -d dna -f fasta -u fasta -p $dir/partitions.txt -t $dir/concatenated.fasta
+
+cd $dir
+
+echo "begin sets;" > partitions.nex
+cat partitions.txt | sed -E 's/p[0-9]{1,}\_//g' >> partitions.nex
+echo "end;" >> partitions.nex
 echo -e "\n## All done for now, goodbye $user ##\n"
