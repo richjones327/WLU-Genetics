@@ -9,3 +9,6 @@ for i in *.fasta; do
     fi
 done
 
+conda activate bootleg
+
+mafft --adjust-direction --auto cox1.fasta > aligned_cox1.fasta
