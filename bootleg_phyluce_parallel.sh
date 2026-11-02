@@ -193,7 +193,7 @@ done
 taxa=$(sort list.txt | uniq | wc -l)
 rm list.txt
 
-threshold=$((taxa * occup/100))
+threshold=$((taxa * 75/100))
 for i in *.fasta; do
 	count=$(grep -c '>' $i)
 	if [[ "$count" -ge "$threshold" ]]; then
