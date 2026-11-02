@@ -1,6 +1,7 @@
 #!/bin/bash
 
 mkdir 01_eremospina
+mkdir 02_lcwgs
 
 rm -r uce-matches/
 rm -r aligned/
