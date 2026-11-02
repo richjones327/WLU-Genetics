@@ -57,7 +57,7 @@ sed -i 's/rrnS/12S/' $name.fasta
 > "$name"_reorder.fasta
 while IFS= read -r gene; do
     grep --no-group-separator -A 1 "$gene" $name.fasta >> "$name"_reorder.fasta
-done < ~/$dir/gene_order.txt
+done < $dir/gene_order.txt
 
 if [ ! -d $dir/mitos/annotated ]; then
     mkdir $dir/mitos/annotated
