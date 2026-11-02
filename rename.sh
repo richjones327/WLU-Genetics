@@ -15,7 +15,7 @@ cd 01_eremospina/01_contigs
 mv SRR36156291.fasta Eremospina_minamoritaana_CNANSO333.fasta
 mv SRR36156292.fasta Eremospina_minamoritaana_CNANSol189.fasta
 mv SRR36156293.fasta Eremospina_fusca_CIDA107918.fasta
-mv SRR36156294.fastaEremospina_fusca_CNANSO368.fasta
+mv SRR36156294.fasta Eremospina_fusca_CNANSO368.fasta
 mv SRR36156295.fasta Eremospina_azteca_UAAAGS48.fasta
 mv SRR36156296.fasta Eremospina_azteca_CNANSO405.fasta
 mv SRR36156297.fasta Eremospina_azteca_CNANSO103F.fasta
