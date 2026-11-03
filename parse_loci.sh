@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/miniconda3/etc/profile.d/conda.sh
+
 for i in *.fasta; do 
     name=$(basename $i .fasta)
     count=$(grep -c 'cox1' $i)
