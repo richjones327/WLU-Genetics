@@ -13,4 +13,4 @@ done
 
 conda activate bootleg
 
-mafft --auto cox1.fasta > aligned_cox1.fasta
+mafft --adjustdirection --auto cox1.fasta > aligned_cox1.fasta
