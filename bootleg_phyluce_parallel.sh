@@ -101,7 +101,7 @@ fi
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	"${SED_INPLACE[@]}" '1c\
 	Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation
-	' "$sample-all.csv"
+	' $dir/02_uce-matches/"$sample-all.csv"
 else
 	"${SED_INPLACE[@]}" "1c\Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation" $dir/02_uce-matches/"$sample-all.csv"
 fi
