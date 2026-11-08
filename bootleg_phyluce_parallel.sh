@@ -24,9 +24,9 @@ if [ ! -f $dir/probes.fasta ]; then
 fi
 
 #echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
-#conda create -n bootleg lastz mafft parallel trimal aliview -y -q
-#conda create -n amas amas -y -q
-#conda create -n iqtree iqtree figtree -y -q
+conda create -n bootleg lastz mafft parallel trimal aliview -y -q
+conda create -n amas amas -y -q
+conda create -n iqtree iqtree figtree -y -q
 
 conda activate bootleg
 
@@ -165,7 +165,7 @@ while IFS= read -r locus; do
 	grep -h -A1 "$locus$" 03_exploded-fastas/* | awk '$0 != "--"' > 04_loci/"$locus.fasta"
 done <<< "$loci"
 
-echo "## Generating statistics ##"
+echo "## Generating UCE statistics ##"
 echo "sample,uce_loci,avg_length,median_length,max_length,min_length,uces_removed,contigs_removed"> uce_stats.csv
 
 uce_statistics() {
@@ -190,7 +190,7 @@ uce_statistics() {
 	echo "$sample,$uce_loci,$average,$median,$max,$min,$uces_removed,$contigs_removed" >> uce_stats.csv
 }
 
-export -f statistics
+export -f uce_statistics
 
 parallel --bar uce_statistics ::: 03_exploded-fastas/*
 
