@@ -2,7 +2,7 @@
 
 dir=$(pwd)
 #sample=$(ls novoplasty/* | sed 's/novoplasty\///')
-sample=$1
+sample=$(ls novoplasty | sed 's/novoplasty\///)
 
 if [ ! -f gene_order.txt ]; then
     curl -L -O https://raw.githubusercontent.com/richjones327/WLU-Genetics/refs/heads/main/gene_order.txt
@@ -10,9 +10,7 @@ fi
 
 source ~/miniconda3/etc/profile.d/conda.sh
 
-if [ ! -d ~/miniconda3/envs/mitos ]; then
-    conda create -n mitos "mitos>2" seqtk -y -q
-fi
+conda create -n mitos "mitos>2" seqtk -y -q
 
 mitos=$(find ~/miniconda3/envs/mitos -name "runmitos.py")
 
