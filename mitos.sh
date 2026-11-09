@@ -42,13 +42,13 @@ if [ ! -f mitos/$name/"$name"_reorder.fasta ]; then
         if [[ "$sample" == *"circ"* ]]; then
             $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -R $dir/refseq89m/ -r $dir/refseq89m --noplots
         elif [[ "$sample" == *"linear"* ]]; then    
-            $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -r $dir/refseq89m/ -r $dir/refseq89m --noplots --linear
+            $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -R $dir/refseq89m/ -r $dir/refseq89m --noplots --linear
         fi
     else
         if [[ "$sample" == *"circ"* ]]; then
             python $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -R $dir/refseq89m/ -r $dir/refseq89m --noplots
         elif [[ "$sample" == *"linear"* ]]; then    
-            python $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -r $dir/refseq89m/ -r $dir/refseq89m --noplots --linear
+            python $mitos -i novoplasty/$sample -c 5 -o $dir/mitos/$name -R $dir/refseq89m/ -r $dir/refseq89m --noplots --linear
         fi
     fi
 fi
