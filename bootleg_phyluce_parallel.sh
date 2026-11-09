@@ -24,9 +24,10 @@ if [ ! -f $dir/probes.fasta ]; then
 fi
 
 #echo "## Hello $user, installing packages LASTZ, MAFFT, and Parallel ##"
-conda create -n bootleg lastz mafft parallel trimal aliview -y -q
+conda create -n bootleg lastz mafft parallel trimal aliview seqtk samtools -y -q
 conda create -n amas amas -y -q
 conda create -n iqtree iqtree figtree -y -q
+
 
 conda activate bootleg
 
@@ -39,6 +40,7 @@ if [ ! -d $dir/03_exploded-fastas/ ]; then
 fi
 
 cd 01_contigs/
+rm *broken*
 
 echo "## Generating assembly statistics ##"
 
@@ -88,7 +90,7 @@ lastz $sample.fasta[multiple] \
 	--hspthresh=3000 \
 	--gappedthresh=3000 \
 	--noentropy \
-	--format=general:name2,name1,score,identity,coverage,strand1,strand2 | sed -e 's/\t/,/g' -e 's/_length_/,/g' -e 's/_cov_/,/g' | sed -E 's/(uce-[0-9]{1,})_(p[0-9]{1,})/\1,\2/g' > $dir/02_uce-matches/$sample-all.csv
+	--format=general:name2,name1,score,identity,coverage,strand1,strand2,start1,end1 | sed -e 's/\t/,/g' -e 's/_length_/,/g' -e 's/_cov_/,/g' | sed -E 's/(uce-[0-9]{1,})_(p[0-9]{1,})/\1,\2/g' > $dir/02_uce-matches/$sample-all.csv
 
 local SED_INPLACE
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -100,15 +102,40 @@ fi
 "${SED_INPLACE[@]}" "/name2/d" $dir/02_uce-matches/"$sample-all.csv"
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	"${SED_INPLACE[@]}" '1c\
-	Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation
+	Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation,MatchStart,MatchEnd
 	' $dir/02_uce-matches/"$sample-all.csv"
 else
-	"${SED_INPLACE[@]}" "1c\Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation" $dir/02_uce-matches/"$sample-all.csv"
+	"${SED_INPLACE[@]}" "1c\Locus,Part,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov,TargetOrientation,QueryOrientation,MatchStart,MatchEnd" $dir/02_uce-matches/"$sample-all.csv"
 fi
 
 # Collect matches
-locus_matches=$(awk -F, '{print $1}' $dir/02_uce-matches//"$sample-all.csv" | sed -E '/Locus/d' | sort -h | uniq)
+locus_matches=$(awk -F, '{print $1}' $dir/02_uce-matches/"$sample-all.csv" | sed -E '/Locus/d' | sort -h | uniq)
 contig_matches=$(awk -F, '{print $3}' $dir/02_uce-matches/"$sample-all.csv" | sed -E '/Contig/d' | sort -h | uniq)
+
+while IFS= read -r node; do
+	grep "$node," $dir/02_uce-matches/"$sample-all.csv" >> "$sample"-split.csv
+done <<< "$contig_matches"
+
+samtools faidx $sample.fasta
+
+while IFS=, read -r locus part node length coverage score id pctid probe_cov pctcov targorient queryorient start end; do
+	if [[ "$length" -ge 2120 ]]; then
+		if [[ "$start" -le 1000 ]]; then
+			start_pos="1"
+		else
+			start_pos=$((start - 1000))
+		fi
+		end_pos=$((end + 1000))
+		if [[ "$end_pos" -gt "$length" ]]; then
+			end_pos=$length
+		fi
+		get=$(echo "$node_length_$length_$coverage")
+		samtools faidx $sample.fasta $get:$start_pos-$end_pos > "$sample"_broken.fasta
+	fi
+done < "$sample"-split.csv
+
+rm $sample.fasta.fai
+rm "$sample"-split.csv
 
 echo "Locus,Contig,ContigLength,ContigCov,Score,ID,PctID,Probe_Coverage,PctCov" > $dir/02_uce-matches/"$sample.csv"
 echo -e "## Loci removed for matching multiple contigs ##" >> $dir/02_uce-matches/"$sample.txt"
@@ -148,7 +175,7 @@ fi
 
 export -f match_probes
 
-parallel --bar match_probes ::: *.fasta
+parallel --bar -j 2 match_probes ::: *.fasta
 
 echo "## Parsing UCE loci ##"
 cd $dir
@@ -193,6 +220,8 @@ uce_statistics() {
 export -f uce_statistics
 
 parallel --bar uce_statistics ::: 03_exploded-fastas/*
+
+exit 0
 
 cd 04_loci
 
@@ -260,8 +289,13 @@ cd ../03_75p_occupancy
 
 conda activate amas
 
-rm $dir/concatenated.fasta
-rm $dir/partitions.nex
+if [ -f rm $dir/concatenated.fasta ]; then
+	rm $dir/concatenated.fasta
+fi
+
+fi [ -f partitions.nex ]; then
+	rm $dir/partitions.nex
+fi
 
 AMAS.py concat -i *.fasta -d dna -f fasta -u fasta -p $dir/partitions.txt -t $dir/concatenated.fasta
 
