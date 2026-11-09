@@ -2,7 +2,7 @@
 
 dir=$(pwd)
 #sample=$(ls novoplasty/* | sed 's/novoplasty\///')
-sample=$(ls novoplasty | sed 's/novoplasty\///')
+sample=$(ls novoplasty/*.fasta | sed 's/novoplasty\///')
 
 if [ ! -f gene_order.txt ]; then
     curl -L -O https://raw.githubusercontent.com/richjones327/WLU-Genetics/refs/heads/main/gene_order.txt

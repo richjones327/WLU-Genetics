@@ -10,7 +10,7 @@ else
     mkdir 01_loci
 fi
 
-for gene in cox1 cox2 cox3 nad1 nad2 nad3 nad4 nad4l nad5 nad6 atp6 cob 16S 12S; do
+for gene in cox1 cox2 cox3 nad1 nad2 nad3 nad4 nad4l nad5 nad6 atp6 atp8 cob 16S 12S; do
     > 01_loci/$gene.fasta  
     for i in *.fasta; do 
         name=$(basename $i .fasta)
