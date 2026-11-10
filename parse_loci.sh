@@ -6,6 +6,7 @@ conda activate bootleg
 
 if [ -d 01_loci ]; then
     rm -r 01_loci
+    mkdir 01_loci
 else
     mkdir 01_loci
 fi
